@@ -1,0 +1,70 @@
+/* ===== Biofiltro · Qualidade da Água ===== */
+
+:root {
+    --cor-fundo: #eef5f7;
+    --cor-card: #ffffff;
+    --cor-texto-suave: #6c757d;
+    --cor-destaque: #e8f3f6;
+    --raio: 1rem;
+    --sombra: 0 .25rem 1rem rgba(0, 0, 0, .08);
+}
+
+body {
+    background: var(--cor-fundo);
+    min-height: 100vh;
+}
+
+/* Barra superior */
+.navbar-brand {
+    letter-spacing: .5px;
+}
+
+/* Cards */
+.card {
+    background: var(--cor-card);
+    border: 0;
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+}
+
+/* Textos auxiliares (faixas de referência, legendas) */
+.faixa {
+    font-size: .8rem;
+    color: var(--cor-texto-suave);
+}
+
+/* Campos do formulário */
+.form-control:focus {
+    box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+}
+
+.input-group-text {
+    background: var(--cor-destaque);
+    color: var(--cor-texto-suave);
+}
+
+/* Caixa de eficiência do biofiltro */
+.eficiencia {
+    background: var(--cor-destaque);
+    border-left: .3rem solid #0d6efd;
+}
+
+/* Tabela de resultados */
+.table th {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--cor-texto-suave);
+}
+
+.badge {
+    font-weight: 600;
+    padding: .45em .7em;
+}
+
+/* Responsivo */
+@media (max-width: 575.98px) {
+    .card-body {
+        padding: 1.25rem !important;
+    }
+}
