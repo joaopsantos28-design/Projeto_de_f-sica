@@ -4,16 +4,26 @@ namespace Controller;
 
 use Model\PH;
 use Model\PhModel;
+use Model\PHs;
 
 class PhController {
 
     //private $PhModel;
 
-    public function __construct(private PH $PhModel) {
+    public function __construct(private PHs $PhModel) {
         //$this->Phmodel = new PhModel();
     }
 
-    private function verifyNegativeNumbers(float $ph, float $cloro_residual, float $concentracao_entrada, float $concentracao_saida, float $eficiencia) {
+    /**
+     * @param float $ph
+     * @param float $cloro_residual
+     * @param float $concentracao_entrada
+     * @param float $concentracao_saida
+     * @param float $eficiencia 
+     * @return array|null
+     */
+
+    private function verifyNegativeNumbers(float $ph, float $cloro_residual, float $concentracao_entrada, float $concentracao_saida, float $eficiencia):array|null {
         if($ph < 0 || $cloro_residual < 0 || $concentracao_entrada < 0 || $concentracao_saida < 0) {
             return [
                 "ph" => null,
@@ -22,7 +32,17 @@ class PhController {
         }
         return null;
     }
-    private function verifyZeroValues(float $ph, float $cloro_residual, float $concentracao_entrada, float $concentracao_saida, float $eficiencia) {
+
+    /**
+     * Checking zero values when calculating BMI.
+     * @param float $ph
+     * @param float $cloro_residual
+     * @param float $concentracao_entrada
+     * @param float $concentracao_saida
+     * @param float $eficiencia 
+     * @return array|null
+     */
+    private function verifyZeroValues(float $ph, float $cloro_residual, float $concentracao_entrada, float $concentracao_saida, float $eficiencia):array|null {
         if($ph == 0 || $cloro_residual == 0 || $concentracao_entrada == 0 || $concentracao_saida == 0) {
             return [
                 "ph" => null,
@@ -32,6 +52,15 @@ class PhController {
         return null;
     }
 
+
+     /**
+     * @param float $ph
+     * @param float $cloro_residual
+     * @param float $concentracao_entrada
+     * @param float $concentracao_saida
+     * @param float $eficiencia 
+     * @return array|null
+     */
     public function calculatePh(float $ph, float $cloro_residual, float $temperatura, float $concentracao_entrada, float $concentracao_saida, float $eficiencia) {
         $this->validateData($ph, $cloro_residual, $temperatura, $concentracao_entrada, $concentracao_saida, $eficiencia); 
 
