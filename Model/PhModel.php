@@ -15,9 +15,9 @@ class PHs {
         $this->db = Connection::getInstance();
     }
 
-    public function createPH(float $ph, float $cloro_residual, float $temperatura, float $concentracao_entrada, float $concentracao_saida, float $eficiencia, string $resultado): bool {
+    public function createPH(float $ph, float $cloro_residual, float $temperatura, float $concentracao_entrada, float $concentracao_saida, float $eficiencia, string $resultado) {
         try {
-            $sql = "INSERT INTO amostras (ph, cloro_residual, temperatura, concentracao_entrada, concentracao_saida, $eficiencia, $resultado, $data_analise) VALUES (:ph, :cloro_residual, :temperatura, :concentracao_entrada, :concentracao_saida, :reusltado, NOW())";
+            $sql = "INSERT INTO amostras (ph, cloro_residual, temperatura, concentracao_entrada, concentracao_saida, $eficiencia, $resultado) VALUES (:ph, :cloro_residual, :temperatura, :concentracao_entrada, :concentracao_saida, :reusltado, NOW())";
 
             $stmt = $this->db->prepare($sql);
             $stmt->bindParam(":ph", $ph, PDO::PARAM_STR);
