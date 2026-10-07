@@ -62,7 +62,7 @@ class PhController
         }
         if (is_string($value)) {
             $normalized = str_replace(',', '.', trim($value));
-            if (preg_match('/^[+-]?\d+(\.\d+)?$/', $normalized) === 1) {
+        if (preg_match('/^[+-]?\d+(\.\d+)?$/', $normalized) === 1) {
                 return (float) $normalized;
             }
         }
@@ -88,7 +88,7 @@ class PhController
      * @param array<string, mixed> $campos
      */
 
-    private function verificarCamposNumericos(array $campos): array|null
+    private function verificarValoresNumericos(array $campos): array|null
     {
         foreach ($campos as $campo => $valor) {
             if ($this->tofloat($valor) === null) {
@@ -113,19 +113,19 @@ class PhController
         ];
 
         foreach ($valores as $campo => $valor) {
-            if ($valor = 0) {
+            if ($valor < 0) {
                 return $this->erro($campo, "O valor de " . self::NOMES[$campo] . " não pode ser negativo.");
             }
         }
         return null;
     }
 
-       /**
+    /**
      * Limites físicos: pH entre 0 e 14; temperatura entre 0 e 100 °C.
      */
 
         private function verificarLimitesFisicos(float $ph, float $temperatura): array|null{
-             if ($ph < 0 || $ph > self::PH_FISICO_MAX) {
+        if ($ph < 0 || $ph > self::PH_FISICO_MAX) {
             return $this->erro('ph', "Valor impossível: o pH deve estar entre 0 e 14.");
         }
         if ($temperatura < 0 || $temperatura > self::TEMP_FISICA_MAX) {
@@ -138,7 +138,7 @@ class PhController
      * Só a concentração de ENTRADA não pode ser zero (divisão por zero).
      * Saída = 0 é válida (100% de remoção); pH, cloro e temperatura = 0 também.
      */
-    private function verifyZeroValues(float $concentracao_entrada): array|null
+    private function verificarValoresZerados(float $concentracao_entrada): array|null
     {
         if ($concentracao_entrada == 0) {
             return $this->erro('entrada', "A concentração de entrada deve ser maior que zero.");
@@ -146,7 +146,7 @@ class PhController
         return null;
     }
  
-    private function verifyOutputGreaterThanInput(float $concentracao_entrada, float $concentracao_saida): array|null
+    private function verificarSaidaMaiorQueEntrada(float $concentracao_entrada, float $concentracao_saida): array|null
     {
         if ($concentracao_saida > $concentracao_entrada) {
             return $this->erro('saida', "A concentração de saída não pode ser maior que a de entrada.");
@@ -200,25 +200,25 @@ class PhController
             return $erro;
         }
  
-        return $this->verifyOutputGreaterThanInput($n['entrada'], $n['saida']);
+        return $this->verificarSaidaMaiorQueEntrada($n['entrada'], $n['saida']);
     }
  
-    public function classifyPh(float $ph): string
+    public function classificarPh(float $ph): string
     {
-        return $this->classify($ph, self::PH_MIN, self::PH_MAX);
+        return $this->classificar($ph, self::PH_MIN, self::PH_MAX);
     }
- 
-    public function classifyCloro(float $cloro_residual): string
+    
+    public function classificarCloro(float $cloro_residual): string
     {
-        return $this->classify($cloro_residual, self::CLORO_MIN, self::CLORO_MAX);
+        return $this->classificar($cloro_residual, self::CLORO_MIN, self::CLORO_MAX);
     }
  
-    public function classifyTemperatura(float $temperatura): string
+    public function classificarTemperatura(float $temperatura): string
     {
-        return $this->classify($temperatura, self::TEMP_MIN, self::TEMP_MAX);
+        return $this->classificar($temperatura, self::TEMP_MIN, self::TEMP_MAX);
     }
  
-    private function classify(float $valor, float $min, float $max): string
+    private function classificar(float $valor, float $min, float $max): string
     {
         return match (true) {
             $valor < $min => self::ABAIXO,
@@ -231,7 +231,7 @@ class PhController
      * Eficiência do biofiltro em %: (entrada - saída) / entrada * 100.
      * @throws \InvalidArgumentException se a entrada for <= 0
      */
-    public function calculateEfficiency(float $concentracao_entrada, float $concentracao_saida): float
+    public function calcularEficiencia(float $concentracao_entrada, float $concentracao_saida): float
     {
         if ($concentracao_entrada <= 0) {
             throw new \InvalidArgumentException("A concentração de entrada deve ser maior que zero.");
@@ -244,7 +244,7 @@ class PhController
      * Valida, classifica, calcula a eficiência e gera o parecer final.
      * Se houver erro, retorna só o erro (nada é calculado).
      */
-    public function calculatePh(
+    public function calcularPh(
         mixed $ph,
         mixed $cloro_residual,
         mixed $temperatura,
@@ -261,10 +261,10 @@ class PhController
         $temperatura = $this->toFloat($temperatura);
         $entrada = $this->toFloat($concentracao_entrada);
         $saida = $this->toFloat($concentracao_saida);
- 
-        $phClass = $this->classifyPh($ph);
-        $cloroClass = $this->classifyCloro($cloro_residual);
-        $tempClass = $this->classifyTemperatura($temperatura);
+        
+        $phClass = $this->classificarPh($ph);
+        $cloroClass = $this->classificarCloro($cloro_residual);
+        $tempClass = $this->classificarTemperatura($temperatura);
  
         $adequada = $phClass === self::ADEQUADO
             && $cloroClass === self::ADEQUADO
@@ -280,7 +280,7 @@ class PhController
             "phClass" => $phClass,
             "cloroClass" => $cloroClass,
             "temperaturaClass" => $tempClass,
-            "eficiencia" => $this->calculateEfficiency($entrada, $saida),
+            "eficiencia" => $this->calcularEficiencia($entrada, $saida),
             "parecer" => $adequada ? "Amostra adequada" : "Amostra inadequada"
         ];
     }
@@ -295,14 +295,14 @@ class PhController
         mixed $concentracao_entrada,
         mixed $concentracao_saida
     ): array {
-        $result = $this->calculatePh($ph, $cloro_residual, $temperatura, $concentracao_entrada, $concentracao_saida);
+        $result = $this->calcularPh($ph, $cloro_residual, $temperatura, $concentracao_entrada, $concentracao_saida);
  
         if (!$result['valid']) {
             $result['saved'] = false;
             return $result;
         }
  
-        $result['saved'] = $this->PhModel->createPH(
+        $result['saved'] = $this->PhModel->criaPh(
             $result['ph'],
             $result['cloro'],
             $result['temperatura'],
